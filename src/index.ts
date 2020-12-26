@@ -12,6 +12,12 @@ class Winnie extends Command {
       description: "the log file to monitor",
       default: "/tmp/access.log",
     }),
+    statsInterval: flags.integer({
+      char: "i",
+      description:
+        "the interval during which to show traffic stats (in seconds)",
+      default: 10,
+    }),
   };
 
   static args = [];
@@ -20,7 +26,7 @@ class Winnie extends Command {
     const { flags } = this.parse(Winnie);
 
     const logReader = new LogReader(flags.file);
-    logReader.start();
+    logReader.start(flags.statsInterval);
   }
 }
 
