@@ -1,12 +1,11 @@
 {
-  "name": "winnie",
+  "name": "winnielog",
   "description": "Datadog CLI assignment for consuming an actively written-to CLF HTTP access log",
   "version": "1.0.0",
   "author": "alex.arvanitidis @alarv",
   "bin": {
-    "winnie": "./bin/run"
+    "winnielog": "./bin/run"
   },
-  "bugs": "https://github.com/alarv/winnie/issues",
   "dependencies": {
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
@@ -43,16 +42,14 @@
     "/bin",
     "/lib"
   ],
-  "homepage": "https://github.com/alarv/winnie",
   "keywords": [
     "oclif"
   ],
   "license": "MIT",
   "main": "lib/index.js",
   "oclif": {
-    "bin": "winnie"
+    "bin": "winnielog"
   },
-  "repository": "alarv/winnie",
   "scripts": {
     "posttest": "eslint . --ext .ts --config .eslintrc",
     "prepack": "rm -rf lib && tsc -b && oclif-dev readme",
