@@ -1,5 +1,6 @@
 import { TrafficData } from "../types/traffic-data";
 import * as chalk from "chalk";
+import * as moment from "moment";
 
 export class TrafficAnalyzer {
   private sectionHits: { [key: string]: number } = {};
@@ -19,14 +20,29 @@ export class TrafficAnalyzer {
   }
 
   private showStats() {
-    console.log(chalk.green("Sections of the web site with the most hits"));
+    console.log(`\n[${moment(new Date())}] current stats report:`);
+    if (Object.values(this.sectionHits).length === 0) {
+      console.log(
+        chalk.yellow(
+          `No traffic found for the past ${this.statsInterval} seconds`
+        )
+      );
+      return;
+    }
 
-    const topSectionHits = Object.entries(this.sectionHits).sort(
-      ([section1, section1Hits], [section2, section2Hits]) =>
-        section2Hits - section1Hits
+    console.log(
+      chalk.green("Top 20 sections of the web site with the most hits:")
     );
 
-    console.log(topSectionHits);
+    Object.entries(this.sectionHits)
+      .sort(
+        ([section1, section1Hits], [section2, section2Hits]) =>
+          section2Hits - section1Hits
+      )
+      .slice(0, 20)
+      .forEach(([section, sectionHits], index) => {
+        console.log(`${index + 1}) section: ${section}, hits: ${sectionHits} `);
+      });
 
     this.sectionHits = {};
   }

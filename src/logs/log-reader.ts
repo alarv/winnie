@@ -2,6 +2,7 @@ import { Tail } from "tail";
 import { TrafficAnalyzer } from "../stats/traffic-analyzer";
 import { LogLineParser } from "./log-line-parser";
 import { TrafficData } from "../types/traffic-data";
+import * as chalk from "chalk";
 
 export interface LogReaderArgs {
   trafficAnalyzerInterval: number;
@@ -23,7 +24,7 @@ export class LogReader {
         const lineData: TrafficData = this.logLineParser.parse(line);
         trafficAnalyzer.feed(lineData);
       } catch (err) {
-        console.error("Line could not be parsed", err);
+        console.error(chalk.red("Line could not be parsed"), err);
       }
     });
   }
