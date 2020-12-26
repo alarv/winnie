@@ -1,21 +1,12 @@
 import moment = require("moment");
-
-export interface LogLineData {
-  client: string | null;
-  userId: string | null;
-  date: Date | null;
-  method: string;
-  request: string;
-  status: number;
-  size: number;
-}
+import { TrafficData } from "../types/traffic-data";
 
 export class LogLineParser {
   private readonly CLF_REGEX: RegExp = new RegExp(
     /^(?<client>\S+)\s\S+\s(?<userid>\S+)\s\[(?<datetime>[^\]]+)]\s"(?<method>[A-Z]+)\s(?<request>[^\s"]+)?\sHTTP\/[0-9.]+"\s(?<status>[0-9]{3})\s(?<size>[0-9]+|-)/
   );
 
-  parse(line: string): LogLineData {
+  parse(line: string): TrafficData {
     const regex = line.match(this.CLF_REGEX);
     if (!regex) {
       throw new Error(`Current line with content ${line} could not be parsed.`);
@@ -23,7 +14,7 @@ export class LogLineParser {
     return LogLineParser.parseGroups(regex.groups);
   }
 
-  private static parseGroups(groups: any): LogLineData {
+  private static parseGroups(groups: any): TrafficData {
     return {
       client: LogLineParser.getEntryDataOrNull(groups.client),
       date: LogLineParser.parseDate(
