@@ -1,26 +1,43 @@
 import { TrafficData } from "../types/traffic-data";
 import * as chalk from "chalk";
 import * as moment from "moment";
+import { Util } from "../util/util";
 
 export class TrafficAnalyzer {
   private sectionHits: { [key: string]: number } = {};
+  private totalHits: number = 0;
+  private hitsByMethod: { [key: string]: number } = {};
 
   constructor(private readonly statsInterval: number) {
+    console.log(`Logging will start in ${statsInterval} seconds...`);
     setInterval(() => this.showStats(), statsInterval * 1000);
   }
 
   feed(lineData: TrafficData) {
     const section = lineData.request.split("/")[1];
+    const requestMethod = lineData.method;
 
     if (!this.sectionHits[section]) {
       this.sectionHits[section] = 0;
     }
+    if (!this.hitsByMethod[requestMethod]) {
+      this.hitsByMethod[requestMethod] = 0;
+    }
 
     this.sectionHits[section]++;
+    this.hitsByMethod[requestMethod]++;
+    this.totalHits++;
   }
 
   private showStats() {
-    console.log(`\n[${moment(new Date())}] current stats report:`);
+    console.log(
+      chalk.blue("===================================================")
+    );
+    console.log(
+      `[${moment(new Date())}] current stats report for the past ${
+        this.statsInterval
+      }s:`
+    );
     if (Object.values(this.sectionHits).length === 0) {
       console.log(
         chalk.yellow(
@@ -29,6 +46,15 @@ export class TrafficAnalyzer {
       );
       return;
     }
+
+    console.log(
+      chalk.green(`Total requests served: ${Util.formatNumber(this.totalHits)}`)
+    );
+
+    console.log(chalk.green("Hits by request: "));
+    Object.entries(this.hitsByMethod).forEach(([method, hits]) => {
+      console.log(`\t${method}: ${Util.formatNumber(hits)}`);
+    });
 
     console.log(
       chalk.green("Top 20 sections of the web site with the most hits:")
@@ -41,9 +67,17 @@ export class TrafficAnalyzer {
       )
       .slice(0, 20)
       .forEach(([section, sectionHits], index) => {
-        console.log(`${index + 1}) section: ${section}, hits: ${sectionHits} `);
+        console.log(
+          `\t${index + 1}) section: ${section}, hits: ${sectionHits} `
+        );
       });
 
+    this.resetMetrics();
+  }
+
+  private resetMetrics() {
     this.sectionHits = {};
+    this.hitsByMethod = {};
+    this.totalHits = 0;
   }
 }

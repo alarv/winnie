@@ -6,6 +6,7 @@ import * as chalk from "chalk";
 
 export interface LogReaderArgs {
   trafficAnalyzerInterval: number;
+  verbose: boolean;
 }
 
 export class LogReader {
@@ -24,7 +25,11 @@ export class LogReader {
         const lineData: TrafficData = this.logLineParser.parse(line);
         trafficAnalyzer.feed(lineData);
       } catch (err) {
-        console.error(chalk.red("Line could not be parsed"), err);
+        if (args.verbose) {
+          console.error(
+            chalk.red(`Line with content "${line}" could not be parsed`)
+          );
+        }
       }
     });
   }

@@ -8,12 +8,17 @@ class Winnie extends Command {
     "A CLI (command-line interface) to track traffic based on a Common Log Format file.";
 
   static flags = {
-    version: flags.version({ char: "v" }),
+    version: flags.version(),
     help: flags.help({ char: "h" }),
     file: flags.string({
       char: "f",
       description: "the path to the log file to monitor e.g. /tmp/access.log",
       default: "/tmp/access.log",
+    }),
+    verbose: flags.boolean({
+      char: "v",
+      description:
+        "if should contain the verbose output of info/warning/errors that may have occurred",
     }),
     statsInterval: flags.integer({
       char: "i",
@@ -34,6 +39,7 @@ class Winnie extends Command {
     const logReader = new LogReader(flags.file);
     logReader.start({
       trafficAnalyzerInterval: flags.statsInterval,
+      verbose: flags.verbose,
     });
   }
 }
