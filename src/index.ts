@@ -12,7 +12,7 @@ class Winnie extends Command {
     help: flags.help({ char: "h" }),
     file: flags.string({
       char: "f",
-      description: "the log file to monitor",
+      description: "the path to the log file to monitor e.g. /tmp/access.log",
       default: "/tmp/access.log",
     }),
     statsInterval: flags.integer({
