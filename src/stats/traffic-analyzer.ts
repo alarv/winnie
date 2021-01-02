@@ -3,8 +3,11 @@ import * as chalk from 'chalk'
 import * as moment from 'moment'
 import { Util } from '../util/util'
 import { AlertHandler } from '../alerts/alert-handler'
+import * as Table from 'cli-table3'
 
 export class TrafficAnalyzer {
+  private readonly TOP_SECTIONS_TO_SHOW: number = 10
+
   private readonly alertHandler: AlertHandler
 
   private sectionHits: { [key: string]: number } = {}
@@ -61,29 +64,50 @@ export class TrafficAnalyzer {
       return
     }
 
-    console.log(
-      chalk.green(`Total requests served: ${Util.formatNumber(this.totalHits)}`)
-    )
-
-    console.log(chalk.green('Hits by request: '))
-    Object.entries(this.hitsByMethod).forEach(([method, hits]) => {
-      console.log(`\t${method}: ${Util.formatNumber(hits)}`)
+    console.log(chalk.green('Hits by request method: '))
+    const hitsByRequestTable = new Table({
+      head: ['Method', 'Hits'],
     })
+    Object.entries(this.hitsByMethod).forEach(([method, hits]) => {
+      hitsByRequestTable.push([method, Util.formatNumber(hits)])
+    })
+    console.log(hitsByRequestTable.toString())
 
     console.log(
-      chalk.green('Top 20 sections of the web site with the most hits:')
+      chalk.green(
+        `Top ${this.TOP_SECTIONS_TO_SHOW} sections of the web site with the most hits:`
+      )
     )
+
+    const topSectionsTable = new Table({
+      head: ['#', 'Section', 'Hits'],
+    })
 
     Object.entries(this.sectionHits)
       .sort(
         ([_, section1Hits], [__, section2Hits]) => section2Hits - section1Hits
       )
-      .slice(0, 20)
+      .slice(0, this.TOP_SECTIONS_TO_SHOW)
       .forEach(([section, sectionHits], index) => {
-        console.log(
-          `\t${index + 1}) section: ${section}, hits: ${sectionHits} `
-        )
+        topSectionsTable.push([
+          index + 1,
+          section,
+          Util.formatNumber(sectionHits),
+        ])
       })
+    console.log(topSectionsTable.toString())
+
+    console.log(
+      chalk.green(`Total requests served: ${Util.formatNumber(this.totalHits)}`)
+    )
+    console.log(
+      chalk.green(
+        `Average requests/s for the past ${this.statsIntervalSeconds}s: ${
+          this.totalHits / this.statsIntervalSeconds
+        }`
+      )
+    )
+
     this.alertHandler.feed(this.totalHits)
     this.resetMetrics()
   }

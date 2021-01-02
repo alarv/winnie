@@ -9,7 +9,6 @@
     "@typescript-eslint/member-delimiter-style": [
       "error",
       {
-        // Prevents us from using any delimiter for interface properties.
         "multiline": {
           "delimiter": "none",
           "requireLast": false
@@ -21,6 +20,7 @@
       }
     ],
     "no-useless-constructor": "off",
-    "arrow-parens": "off"
+    "arrow-parens": "off",
+    "no-console": "off"
   }
 }

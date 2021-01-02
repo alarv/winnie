@@ -28,7 +28,6 @@ export class AlertHandler {
   private checkAlert(): void {
     const hitsPerSecAvgForInterval = this.calculateAvgForInterval()
 
-    console.log('hitsPerSecAvgForInterval: ' + hitsPerSecAvgForInterval)
     if (hitsPerSecAvgForInterval > this.alertRequestPerSThreshold) {
       this.enableAlert(hitsPerSecAvgForInterval, this.alertRequestPerSThreshold)
     } else {
@@ -52,21 +51,29 @@ export class AlertHandler {
       0
     )
 
-    console.log('hitsSumForInterval: ' + hitsSumForInterval)
     return hitsSumForInterval / (this.alertIntervalMinutes * 60)
   }
 
   private enableAlert(metricValue: number, thresholdValue: number) {
     if (this.alertState) {
+      console.log(
+        chalk.red(
+          '#########\n' +
+            "[Alert still hasn't recovered] High traffic detected on server!\n" +
+            `Metric value: ${metricValue}, \n` +
+            `Threshold value: ${thresholdValue}\n` +
+            '#########'
+        )
+      )
       return
     }
     this.alertState = true
     console.log(
       chalk.red(
         '#########\n' +
-          '[Alert] High traffic detected on server!\n' +
+          '[Alert Triggered] High traffic detected on server!\n' +
           `Metric value: ${metricValue}, \n` +
-          `Threshold value: ${thresholdValue}` +
+          `Threshold value: ${thresholdValue}\n` +
           '#########'
       )
     )
@@ -82,7 +89,7 @@ export class AlertHandler {
         '#########\n' +
           '[Recovered] High traffic detected on server!\n' +
           `Metric value: ${metricValue}, \n` +
-          `Threshold value: ${thresholdValue}` +
+          `Threshold value: ${thresholdValue}\n` +
           '#########'
       )
     )
