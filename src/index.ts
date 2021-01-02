@@ -1,7 +1,7 @@
 import { Command, flags } from '@oclif/command'
 import { LogReader } from './logs/log-reader'
 import * as figlet from 'figlet'
-import * as chalk from 'chalk'
+import { ConsoleLogger } from './util/console-logger'
 
 class Winnie extends Command {
   static description =
@@ -45,10 +45,11 @@ class Winnie extends Command {
   async run() {
     const { flags } = this.parse(Winnie)
 
-    console.log(chalk.yellow(figlet.textSync('Winnie')))
-    console.log('\n' + chalk.blue(Winnie.description))
+    const consoleLogger = new ConsoleLogger()
+    const logReader = new LogReader(consoleLogger, flags.file)
+    consoleLogger.warn(figlet.textSync('Winnie'))
+    consoleLogger.info('\n' + Winnie.description)
 
-    const logReader = new LogReader(flags.file)
     logReader.start({
       trafficAnalyzerIntervalSeconds: flags.statsIntervalSeconds,
       requestsThreshold: flags.requestsThreshold,

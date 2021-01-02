@@ -1,5 +1,5 @@
-import moment = require('moment')
-import chalk = require('chalk')
+import { ConsoleLogger } from '../util/console-logger'
+import * as moment from 'moment'
 
 interface AlertHitsData {
   hits: number
@@ -12,15 +12,16 @@ export class AlertHandler {
   private historicalHitsData: Array<AlertHitsData> = []
 
   constructor(
+    private readonly consoleLogger: ConsoleLogger,
     private readonly statsIntervalSeconds: number,
     private readonly alertIntervalMinutes: number,
     private readonly alertRequestPerSThreshold: number
   ) {}
 
-  feed(totalHits: number): void {
+  feed(totalHits: number, currentDate: Date): void {
     this.historicalHitsData.push({
       hits: totalHits,
-      date: new Date(),
+      date: currentDate,
     })
     this.checkAlert()
   }
@@ -56,26 +57,22 @@ export class AlertHandler {
 
   private enableAlert(metricValue: number, thresholdValue: number) {
     if (this.alertState) {
-      console.log(
-        chalk.red(
-          '#########\n' +
-            "[Alert still hasn't recovered] High traffic detected on server!\n" +
-            `Metric value: ${metricValue}, \n` +
-            `Threshold value: ${thresholdValue}\n` +
-            '#########'
-        )
-      )
-      return
-    }
-    this.alertState = true
-    console.log(
-      chalk.red(
+      this.consoleLogger.error(
         '#########\n' +
-          '[Alert Triggered] High traffic detected on server!\n' +
+          "[Alert still hasn't recovered] High traffic detected on server!\n" +
           `Metric value: ${metricValue}, \n` +
           `Threshold value: ${thresholdValue}\n` +
           '#########'
       )
+      return
+    }
+    this.alertState = true
+    this.consoleLogger.error(
+      '#########\n' +
+        '[Alert Triggered] High traffic detected on server!\n' +
+        `Metric value: ${metricValue}, \n` +
+        `Threshold value: ${thresholdValue}\n` +
+        '#########'
     )
   }
 
@@ -84,14 +81,12 @@ export class AlertHandler {
       return
     }
     this.alertState = false
-    console.log(
-      chalk.green(
-        '#########\n' +
-          '[Recovered] High traffic detected on server!\n' +
-          `Metric value: ${metricValue}, \n` +
-          `Threshold value: ${thresholdValue}\n` +
-          '#########'
-      )
+    this.consoleLogger.success(
+      '#########\n' +
+        '[Recovered] High traffic detected on server!\n' +
+        `Metric value: ${metricValue}, \n` +
+        `Threshold value: ${thresholdValue}\n` +
+        '#########'
     )
   }
 }

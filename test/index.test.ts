@@ -5,15 +5,9 @@ import cmd = require('../src')
 describe('winnie', () => {
   test
     .stdout()
-    .do(() => cmd.run([]))
-    .it('runs hello', (ctx) => {
-      expect(ctx.stdout).to.contain('hello world')
-    })
-
-  test
-    .stdout()
-    .do(() => cmd.run(['--name', 'jeff']))
-    .it('runs hello --name jeff', (ctx) => {
-      expect(ctx.stdout).to.contain('hello jeff')
+    .do(() => cmd.run(['--help']))
+    .it('runs help menu', (ctx) => {
+      expect(ctx.stdout).to.contain('USAGE')
+      expect(ctx.stdout).to.contain('OPTIONS')
     })
 })

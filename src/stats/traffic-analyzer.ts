@@ -1,9 +1,9 @@
 import { TrafficData } from '../types/traffic-data'
-import * as chalk from 'chalk'
 import * as moment from 'moment'
 import { Util } from '../util/util'
 import { AlertHandler } from '../alerts/alert-handler'
 import * as Table from 'cli-table3'
+import { ConsoleLogger } from '../util/console-logger'
 
 export class TrafficAnalyzer {
   private readonly TOP_SECTIONS_TO_SHOW: number = 10
@@ -17,13 +17,17 @@ export class TrafficAnalyzer {
   private hitsByMethod: { [key: string]: number } = {}
 
   constructor(
+    private readonly consoleLogger: ConsoleLogger,
     private readonly statsIntervalSeconds: number,
     private readonly alertIntervalMinutes: number,
     private readonly requestsThreshold: number
   ) {
-    console.log(`Logging will start in ${statsIntervalSeconds} seconds...`)
+    this.consoleLogger.info(
+      `Logging will start in ${statsIntervalSeconds} seconds...`
+    )
     setInterval(() => this.showStats(), statsIntervalSeconds * 1000)
     this.alertHandler = new AlertHandler(
+      this.consoleLogger,
       statsIntervalSeconds,
       alertIntervalMinutes,
       requestsThreshold
@@ -47,36 +51,33 @@ export class TrafficAnalyzer {
   }
 
   private showStats() {
-    console.log(
-      chalk.blue('===================================================')
+    this.consoleLogger.info(
+      '==================================================='
     )
-    console.log(
+    this.consoleLogger.info(
       `[${moment(new Date())}] current stats report for the past ${
         this.statsIntervalSeconds
       }s:`
     )
     if (Object.values(this.sectionHits).length === 0) {
-      console.log(
-        chalk.yellow(
-          `No traffic found for the past ${this.statsIntervalSeconds} seconds`
-        )
+      this.consoleLogger.warn(
+        `No traffic found for the past ${this.statsIntervalSeconds} seconds`
       )
+      this.alertHandler.feed(0, new Date())
       return
     }
 
-    console.log(chalk.green('Hits by request method: '))
+    this.consoleLogger.success('Hits by request method: ')
     const hitsByRequestTable = new Table({
       head: ['Method', 'Hits'],
     })
     Object.entries(this.hitsByMethod).forEach(([method, hits]) => {
       hitsByRequestTable.push([method, Util.formatNumber(hits)])
     })
-    console.log(hitsByRequestTable.toString())
+    this.consoleLogger.info(hitsByRequestTable.toString())
 
-    console.log(
-      chalk.green(
-        `Top ${this.TOP_SECTIONS_TO_SHOW} sections of the web site with the most hits:`
-      )
+    this.consoleLogger.success(
+      `Top ${this.TOP_SECTIONS_TO_SHOW} sections of the web site with the most hits:`
     )
 
     const topSectionsTable = new Table({
@@ -95,20 +96,18 @@ export class TrafficAnalyzer {
           Util.formatNumber(sectionHits),
         ])
       })
-    console.log(topSectionsTable.toString())
+    this.consoleLogger.info(topSectionsTable.toString())
 
-    console.log(
-      chalk.green(`Total requests served: ${Util.formatNumber(this.totalHits)}`)
+    this.consoleLogger.success(
+      `Total requests served: ${Util.formatNumber(this.totalHits)}`
     )
-    console.log(
-      chalk.green(
-        `Average requests/s for the past ${this.statsIntervalSeconds}s: ${
-          this.totalHits / this.statsIntervalSeconds
-        }`
-      )
+    this.consoleLogger.success(
+      `Average requests/s for the past ${this.statsIntervalSeconds}s: ${
+        this.totalHits / this.statsIntervalSeconds
+      }`
     )
 
-    this.alertHandler.feed(this.totalHits)
+    this.alertHandler.feed(this.totalHits, new Date())
     this.resetMetrics()
   }
 
