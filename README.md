@@ -26,6 +26,8 @@ $ npm install -g
 to create the command `winnielog` in your local bin
 ```
 # Usage
+Run the --help command to see all the available arguments
+
 <!-- usage -->
 ```sh-session
 $ winnielog --help
@@ -35,6 +37,8 @@ winnielog/1.0.0 darwin-x64 node-v10.15.0
 ...
 ```
 <!-- usagestop -->
+
+
 
 # Sample output of command
 ```sh-session
