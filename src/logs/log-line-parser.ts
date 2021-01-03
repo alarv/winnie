@@ -1,6 +1,8 @@
 import moment = require('moment')
 import { TrafficData } from '../types/traffic-data'
 
+const STRFTIME_FORMAT = 'DD/MMMM/YYYY:HH:mm:ss Z'
+
 export class LogLineParser {
   private readonly CLF_REGEX: RegExp = new RegExp(
     /^(?<client>\S+)\s\S+\s(?<userid>\S+)\s\[(?<datetime>[^\]]+)]\s"(?<method>[A-Z]+)\s(?<request>[^\s"]+)?\sHTTP\/[0-9.]+"\s(?<status>\d{3})\s(?<size>\d+|-)/
@@ -18,22 +20,22 @@ export class LogLineParser {
     return {
       client: LogLineParser.getEntryDataOrNull(groups.client),
       date: LogLineParser.parseDate(
-        LogLineParser.getEntryDataOrNull(groups.date)
+        LogLineParser.getEntryDataOrNull(groups.datetime)
       ),
       method: groups.method,
       request: groups.request,
-      size: groups.size,
-      status: groups.status,
+      size: parseInt(groups.size, 10),
+      status: parseInt(groups.status, 10),
       userId: LogLineParser.getEntryDataOrNull(groups.userid),
     }
   }
 
   private static parseDate(date: string | null): Date | null {
-    if (date === null) {
+    if (!date) {
       return null
     }
 
-    return moment(date).toDate() // %d/%b/%Y:%H:%M:%S %z;
+    return moment(date, STRFTIME_FORMAT).toDate() // %d/%b/%Y:%H:%M:%S %z;
   }
 
   private static getEntryDataOrNull(entryData: string): string | null {

@@ -5,7 +5,7 @@ import * as moment from 'moment'
 const FIXED_DATE = new Date('2021-05-13T12:33:37.000Z')
 
 function secondsAgo(seconds: number, date: Date): Date {
-  return new Date(date.getTime() - seconds * 1000)
+  return moment(date).subtract(seconds, 'seconds').toDate()
 }
 
 describe('Alert Handler', () => {
@@ -14,17 +14,24 @@ describe('Alert Handler', () => {
     success: jest.fn(),
   } as unknown) as ConsoleLogger
   let alertHandler: AlertHandler
+
   beforeEach(() => {
-    alertHandler = new AlertHandler(consoleLoggerSpy, 10, 1, 10)
+    jest
+      .spyOn(Date, 'now')
+      .mockImplementation(() => moment(FIXED_DATE).valueOf())
   })
 
-  describe('no alerts', () => {
-    it('no logs if no traffic', () => {
+  describe('should show no alerts', () => {
+    beforeEach(() => {
+      alertHandler = new AlertHandler(consoleLoggerSpy, 10, 1, 10)
+    })
+
+    it('no alerts if no traffic', () => {
       alertHandler.feed(0, secondsAgo(10, FIXED_DATE))
       expect(consoleLoggerSpy.error).not.toHaveBeenCalled()
     })
 
-    it('no logs if traffic is below threshold', () => {
+    it('no alerts if traffic is below threshold', () => {
       alertHandler.feed(10, secondsAgo(30, FIXED_DATE))
       alertHandler.feed(10, secondsAgo(20, FIXED_DATE))
       alertHandler.feed(10, secondsAgo(10, FIXED_DATE))
@@ -32,7 +39,13 @@ describe('Alert Handler', () => {
     })
   })
 
-  describe('alerts', () => {
+  describe('should show alerts', () => {
+    beforeEach(() => {
+      alertHandler = new AlertHandler(consoleLoggerSpy, 10, 2, 10)
+    })
+
+    afterEach(jest.clearAllMocks)
+
     it('if traffic exceeds threshold should trigger alert', () => {
       alertHandler.feed(250, secondsAgo(60, FIXED_DATE))
       alertHandler.feed(250, secondsAgo(50, FIXED_DATE))
@@ -58,6 +71,77 @@ describe('Alert Handler', () => {
 
       // alert should have recovered
       expect(consoleLoggerSpy.success).toHaveBeenCalled()
+    })
+  })
+
+  describe('should show alerts on marginal cases', () => {
+    beforeEach(() => {
+      alertHandler = new AlertHandler(consoleLoggerSpy, 10, 1, 5)
+    })
+
+    it('if traffic exceeds threshold should trigger alert', () => {
+      // current date 2 minutes ago
+      jest
+        .spyOn(Date, 'now')
+        .mockImplementation(() =>
+          moment(FIXED_DATE).subtract(2, 'minute').valueOf()
+        )
+
+      alertHandler.feed(50, secondsAgo(180, FIXED_DATE))
+      expect(consoleLoggerSpy.error).not.toHaveBeenCalled()
+      alertHandler.feed(50, secondsAgo(170, FIXED_DATE))
+      expect(consoleLoggerSpy.error).not.toHaveBeenCalled()
+      alertHandler.feed(50, secondsAgo(160, FIXED_DATE))
+      expect(consoleLoggerSpy.error).not.toHaveBeenCalled()
+      alertHandler.feed(50, secondsAgo(150, FIXED_DATE))
+      expect(consoleLoggerSpy.error).not.toHaveBeenCalled()
+      alertHandler.feed(50, secondsAgo(140, FIXED_DATE))
+      expect(consoleLoggerSpy.error).not.toHaveBeenCalled()
+      alertHandler.feed(50, secondsAgo(130, FIXED_DATE))
+      expect(consoleLoggerSpy.error).not.toHaveBeenCalled()
+
+      jest.clearAllMocks()
+      // current date 1 minute ago
+      jest
+        .spyOn(Date, 'now')
+        .mockImplementation(() =>
+          moment(FIXED_DATE).subtract(1, 'minute').valueOf()
+        )
+
+      alertHandler.feed(100, secondsAgo(120, FIXED_DATE))
+      expect(consoleLoggerSpy.error).not.toHaveBeenCalled()
+      alertHandler.feed(100, secondsAgo(110, FIXED_DATE))
+      expect(consoleLoggerSpy.error).not.toHaveBeenCalled()
+      alertHandler.feed(100, secondsAgo(100, FIXED_DATE))
+      expect(consoleLoggerSpy.error).not.toHaveBeenCalled()
+      alertHandler.feed(50, secondsAgo(90, FIXED_DATE))
+      // below is the point where alert should be triggered, 350 requests in 1'
+      // which means 5,8 requests/s while threshold is 5
+      expect(consoleLoggerSpy.error).toHaveBeenCalled()
+      alertHandler.feed(50, secondsAgo(80, FIXED_DATE))
+      expect(consoleLoggerSpy.error).toHaveBeenCalled()
+      alertHandler.feed(50, secondsAgo(70, FIXED_DATE))
+      expect(consoleLoggerSpy.error).toHaveBeenCalled()
+      alertHandler.feed(50, secondsAgo(60, FIXED_DATE))
+      expect(consoleLoggerSpy.error).toHaveBeenCalled()
+
+      jest.clearAllMocks()
+      // current date now
+      jest
+        .spyOn(Date, 'now')
+        .mockImplementation(() => moment(FIXED_DATE).valueOf())
+
+      alertHandler.feed(50, secondsAgo(50, FIXED_DATE))
+      expect(consoleLoggerSpy.success).toHaveBeenCalled() // point where alert should recover
+      expect(consoleLoggerSpy.error).not.toHaveBeenCalled()
+      alertHandler.feed(50, secondsAgo(40, FIXED_DATE))
+      expect(consoleLoggerSpy.error).not.toHaveBeenCalled()
+      alertHandler.feed(50, secondsAgo(30, FIXED_DATE))
+      expect(consoleLoggerSpy.error).not.toHaveBeenCalled()
+      alertHandler.feed(50, secondsAgo(20, FIXED_DATE))
+      expect(consoleLoggerSpy.error).not.toHaveBeenCalled()
+      alertHandler.feed(50, secondsAgo(10, FIXED_DATE))
+      expect(consoleLoggerSpy.error).not.toHaveBeenCalled()
     })
   })
 })

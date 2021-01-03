@@ -45,7 +45,7 @@ export class AlertHandler {
       'minutes'
     )
     this.historicalHitsData = this.historicalHitsData.filter((alertHitsData) =>
-      moment(alertHitsData.date).isAfter(alertTimeWindowStart)
+      moment(alertHitsData.date).isSameOrAfter(alertTimeWindowStart)
     )
     const hitsSumForInterval = this.historicalHitsData.reduce(
       (previousValue, currentValue) => previousValue + currentValue.hits,
