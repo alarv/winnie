@@ -8,13 +8,13 @@ I used OCLIF provided by Heroku, which is a nice framework to get started quickl
 
 I took the liberty of naming the CLI "Winnielog", it's just a silly name I came up with when building the project. 
 
-####Tested on
+#### Tested on
 
 I used [flog](https://github.com/mingrammer/flog) to test in real-time the log generation and how the app is performing.
 
 MacOS was the platform I've tested on, using Node v10.15.0.  
 
-####Improvements I'd make on the code:
+#### Improvements I'd make on the code:
 - End-to-end tests, adding a sample file generating some logs and checking the results of the command
 - There should be also a webpage generated from the code, to provide a much better UI. I found out that I can also provide a website after I've started implementing the code, so I didn't have time to rewrite the whole code using a framework such as [nestJS](https://nestjs.com/).
 - Dependency injection framework (maybe the dependency injection of nestJS) 
