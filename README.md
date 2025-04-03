@@ -5,7 +5,7 @@ Winnie
 
 ![Winnie](assets/winnie.png)
 
-Winnie is the result of the Datadog CLI assignment for consuming an actively written-to CLF HTTP access log, implemented by Alex Arvanitidis. Its name was inspired by Winnie the pooh looking into the honey pot, as this program is looking into the access logs of a webserver.  
+Winnie is the result of a CLI assignment for consuming an actively written-to CLF HTTP access log, implemented by Alex Arvanitidis. Its name was inspired by Winnie the pooh looking into the honey pot, as this program is looking into the access logs of a webserver.  
 
 <!-- toc -->
 * [Prerequisites](#prerequisites)
